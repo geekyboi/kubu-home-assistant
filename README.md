@@ -10,8 +10,9 @@ encryption key; after that it is fully local and your password isn't stored.
 folder, restart, then go to Settings → Devices & services. Kubu should be discovered
 automatically (or use "Add integration" → Kubu). Enter your Kubu email and password.
 
-**HACS:** push this folder to a GitHub repo, then add it in HACS as a custom repository
-(type: Integration).
+**HACS (recommended):** HACS → ⋮ → Custom repositories → add
+`https://github.com/geekyboi/kubu-home-assistant` as type **Integration**, then download
+"Kubu Smart (local Bluetooth)" and restart Home Assistant. Updates then show up in HACS.
 
 Added a sensor in the Kubu app later? Open the integration's ⋮ menu → Reconfigure and sign in again.
 
