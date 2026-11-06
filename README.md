@@ -37,13 +37,17 @@ States are restored after a restart, since sensors only advertise when something
 - `tools/`: Mac scripts used to confirm it (`kubu_keys.py`, `kubu_scan.py`)
 - `tests/`: `pip install pytest-homeassistant-custom-component && pytest`
 
-## Troubleshooting: entities never change
+## Troubleshooting: entities never change, or change late
 
 Kubu sensors put their state in the **scan response**, so the scanner that hears them
-must use **active** scanning. Since Home Assistant 2026.6, ESPHome Bluetooth proxies
-default to **Auto (passive)**, which overrides `active: true` in the proxy's YAML.
+must use **active** scanning. Since Home Assistant 2026.6, scanners and ESPHome proxies
+default to **Auto**, which scans passively and overrides `active: true` in a proxy's YAML.
 
-Fix: Settings → Devices & services → ESPHome → your proxy → **Configure** →
+From v0.1.3 the integration asks Auto-mode scanners for an active window of 35 s every
+60 s per sensor (the tightest Home Assistant allows), so states arrive without any
+setup, but can lag by up to ~25 s. For instant updates set the scanner to Active:
+
+Settings → Devices & services → ESPHome → your proxy → **Configure** →
 Bluetooth scanning mode → **Active**. For a local adapter, do the same under the
 Bluetooth integration.
 

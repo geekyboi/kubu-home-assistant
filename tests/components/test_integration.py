@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.kubu.api import CannotConnect, InvalidAuth
 from custom_components.kubu.const import DOMAIN
+from custom_components.kubu.coordinator import _SUPPORTS_ACTIVE_REQUESTS
 
 KEY = "00112233445566778899aabbccddeeff"
 MAC = "D0:D5:CB:8F:12:34"
@@ -75,8 +76,11 @@ async def test_adverts_update_entities(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
     captured = {}
 
-    def fake_register(_hass, cb, _matcher, _mode):
-        captured["cb"] = cb
+    def fake_register(_hass, cb, matcher, _mode, **kwargs):
+        if "address" in matcher:
+            captured.setdefault("active", []).append((matcher["address"], kwargs))
+        else:
+            captured["cb"] = cb
         return lambda: None
 
     with patch(
@@ -86,6 +90,10 @@ async def test_adverts_update_entities(hass: HomeAssistant) -> None:
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
+    if _SUPPORTS_ACTIVE_REQUESTS:
+        assert captured["active"] == [
+            ("D0:D5:CB:8F:12:34", {"scan_interval": 60.0, "scan_duration": 35.0})
+        ]
     door, lock = "binary_sensor.front_door", "binary_sensor.front_door_lock"
     battery_v, state = "sensor.front_door_battery_voltage", "sensor.front_door_state"
     assert hass.states.get(door).state == "unknown"
@@ -185,8 +193,11 @@ async def test_sensor_matched_by_key_when_address_differs(hass: HomeAssistant) -
     entry.add_to_hass(hass)
     captured = {}
 
-    def fake_register(_hass, cb, _matcher, _mode):
-        captured["cb"] = cb
+    def fake_register(_hass, cb, matcher, _mode, **kwargs):
+        if "address" in matcher:
+            captured.setdefault("active", []).append((matcher["address"], kwargs))
+        else:
+            captured["cb"] = cb
         return lambda: None
 
     with patch(

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -17,6 +18,20 @@ from .protocol import CLASS_NAMES, MANUFACTURER_ID, KubuFrame, parse
 
 _LOGGER = logging.getLogger(__name__)
 
+# Kubu sensors keep their latest state in the scan response, which only an
+# active scan fetches. HA 2026.6+ scanners default to "Auto" (passive unless an
+# integration asks), so ask for the tightest active cadence HA allows for each
+# sensor: a 35 s active window every 60 s. Scanners set to Active ignore this.
+ACTIVE_SCAN_INTERVAL = 60.0
+ACTIVE_SCAN_DURATION = 35.0
+_SUPPORTS_ACTIVE_REQUESTS = (
+    "scan_interval" in inspect.signature(bluetooth.async_register_callback).parameters
+)
+
+
+def _colon_mac(mac: str) -> str:
+    return ":".join(mac[i : i + 2] for i in range(0, 12, 2))
+
 
 @dataclass
 class SensorState:
@@ -28,6 +43,13 @@ class SensorState:
     last_seen: datetime | None = None
     rssi: int | None = None
     last_payload: bytes | None = field(default=None, repr=False)
+
+
+@callback
+def _ignore_advert(
+    info: bluetooth.BluetoothServiceInfoBleak, change: bluetooth.BluetoothChange
+) -> None:
+    """Placeholder callback: these registrations exist only to request active scans."""
 
 
 class KubuRuntime:
@@ -44,17 +66,48 @@ class KubuRuntime:
         # (sNo) is not the address Home Assistant sees.
         self.aliases: dict[str, str] = {}
         self._unmatched_logged: set[str] = set()
+        self._cancels: list[bluetooth.CALLBACK_TYPE] = []
 
     @callback
     def async_start(self) -> bluetooth.CALLBACK_TYPE:
         """Register for adverts; returns the unregister callback."""
+        self._cancels = cancels = [
+            bluetooth.async_register_callback(
+                self.hass,
+                self._async_on_advert,
+                bluetooth.BluetoothCallbackMatcher(
+                    manufacturer_id=MANUFACTURER_ID, connectable=False
+                ),
+                bluetooth.BluetoothScanningMode.ACTIVE,
+            )
+        ]
+        if _SUPPORTS_ACTIVE_REQUESTS:
+            cancels += [self._async_request_active(mac) for mac in self.sensors]
+        else:
+            _LOGGER.debug(
+                "This Home Assistant can't request active scans; set scanners to Active"
+            )
+
+        @callback
+        def _cancel() -> None:
+            for cancel in self._cancels:
+                cancel()
+            self._cancels.clear()
+
+        return _cancel
+
+    @callback
+    def _async_request_active(self, mac: str) -> bluetooth.CALLBACK_TYPE:
+        """Ask Auto-mode scanners to actively scan this sensor's address."""
         return bluetooth.async_register_callback(
             self.hass,
-            self._async_on_advert,
+            _ignore_advert,
             bluetooth.BluetoothCallbackMatcher(
-                manufacturer_id=MANUFACTURER_ID, connectable=False
+                address=_colon_mac(mac), connectable=False
             ),
             bluetooth.BluetoothScanningMode.ACTIVE,
+            scan_interval=ACTIVE_SCAN_INTERVAL,
+            scan_duration=ACTIVE_SCAN_DURATION,
         )
 
     def _match_by_key(self, adv_mac: str, payload: bytes) -> str | None:
@@ -83,6 +136,8 @@ class KubuRuntime:
                     adv_mac,
                 )
                 self.aliases[adv_mac] = mac
+                if _SUPPORTS_ACTIVE_REQUESTS:
+                    self._cancels.append(self._async_request_active(adv_mac))
                 return mac
         return None
 
