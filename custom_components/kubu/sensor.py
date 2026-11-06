@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -25,6 +25,7 @@ from . import KubuConfigEntry
 from .coordinator import SensorState
 from .entity import KubuEntity
 
+LAST_SEEN_RESOLUTION = timedelta(minutes=15)
 STATE_OPTIONS = [
     "open",
     "closed",
@@ -63,6 +64,7 @@ DESCRIPTIONS: tuple[KubuSensorDescription, ...] = (
         translation_key="last_seen",
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         value_fn=lambda s: s.last_seen,
     ),
     KubuSensorDescription(
@@ -91,11 +93,24 @@ class KubuSensor(KubuEntity, RestoreSensor):
     _restored: Any = None
 
     async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
         if self.entity_description.key != "rssi" and (
             data := await self.async_get_last_sensor_data()
         ):
             self._restored = data.native_value
+        await super().async_added_to_hass()
+
+    def _current_value(self) -> Any:
+        return self.native_value
+
+    def _should_write(self, previous: Any, current: Any) -> bool:
+        if (
+            self.entity_description.key == "last_seen"
+            and isinstance(previous, datetime)
+            and current is not None
+        ):
+            # A heartbeat, not an event: refresh at most every 15 minutes.
+            return current - previous >= LAST_SEEN_RESOLUTION
+        return current != previous
 
     @property
     def native_value(self) -> str | int | datetime | None:

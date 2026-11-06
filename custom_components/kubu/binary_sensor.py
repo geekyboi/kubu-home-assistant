@@ -88,12 +88,15 @@ class KubuBinarySensor(KubuEntity, BinarySensorEntity, RestoreEntity):
     _restored: bool | None = None
 
     async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
         if (last := await self.async_get_last_state()) is not None and last.state in (
             "on",
             "off",
         ):
             self._restored = last.state == STATE_ON
+        await super().async_added_to_hass()
+
+    def _current_value(self) -> bool | None:
+        return self.is_on
 
     @property
     def is_on(self) -> bool | None:

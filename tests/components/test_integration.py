@@ -120,6 +120,14 @@ async def test_adverts_update_entities(hass: HomeAssistant) -> None:
 
     send("10010a84ae965ce7ffea000010ff0428")  # locked
     await hass.async_block_till_done()
+    locked_at = hass.states.get(lock).last_updated
+    state_at = hass.states.get(state).last_updated
+
+    # Heartbeat: new counter, same state -> no new state writes.
+    send("10010a84ae975ce7ffea000010ff0428")
+    await hass.async_block_till_done()
+    assert hass.states.get(lock).last_updated == locked_at
+    assert hass.states.get(state).last_updated == state_at
     assert hass.states.get(lock).state == "off"
     assert hass.states.get(state).state == "locked"
     assert hass.states.get("binary_sensor.front_door_tamper").state == "off"

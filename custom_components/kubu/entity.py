@@ -22,6 +22,7 @@ class KubuEntity(Entity):
 
     _attr_has_entity_name = True
     _attr_should_poll = False
+    _last_written: Any = None
 
     def __init__(
         self, runtime: KubuRuntime, mac: str, description: EntityDescription
@@ -47,6 +48,7 @@ class KubuEntity(Entity):
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
+        self._last_written = self._current_value()
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,
@@ -55,6 +57,19 @@ class KubuEntity(Entity):
             )
         )
 
+    def _current_value(self) -> Any:
+        """The value this entity reports; writes are skipped while it is unchanged."""
+        raise NotImplementedError
+
+    def _should_write(self, previous: Any, current: Any) -> bool:
+        return current != previous
+
     @callback
     def _handle_update(self) -> None:
+        # Sensors re-broadcast about every 30 s with a new counter even when nothing
+        # changed, so only write (and log activity) when this entity's value moves.
+        current = self._current_value()
+        if not self._should_write(self._last_written, current):
+            return
+        self._last_written = current
         self.async_write_ha_state()

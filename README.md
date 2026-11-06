@@ -27,10 +27,12 @@ Added a sensor in the Kubu app later? Open the integration's ⋮ menu → Reconf
 | `binary_sensor.<name>_tamper` | on = tampered |
 | `binary_sensor.<name>_battery` | on = battery low |
 | `sensor.<name>_state` | open / closed / locked / tampered … |
-| `sensor.<name>_battery_voltage`, `_last_seen` | diagnostics |
+| `sensor.<name>_battery_voltage` | diagnostic |
+| `sensor.<name>_last_seen` | disabled by default; refreshes at most every 15 min |
 | vibration, signal strength | disabled by default |
 
-States are restored after a restart, since sensors only advertise when something changes.
+Sensors re-broadcast about every 30 s; entities only update when their value changes, so the
+logbook only shows real events. States are restored after a restart.
 
 ## Repo layout
 
