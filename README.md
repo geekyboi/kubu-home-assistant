@@ -36,3 +36,16 @@ States are restored after a restart, since sensors only advertise when something
 - `protocol-findings.md`: how the protocol was worked out
 - `tools/`: Mac scripts used to confirm it (`kubu_keys.py`, `kubu_scan.py`)
 - `tests/`: `pip install pytest-homeassistant-custom-component && pytest`
+
+## Troubleshooting: entities never change
+
+Kubu sensors put their state in the **scan response**, so the scanner that hears them
+must use **active** scanning. Since Home Assistant 2026.6, ESPHome Bluetooth proxies
+default to **Auto (passive)**, which overrides `active: true` in the proxy's YAML.
+
+Fix: Settings → Devices & services → ESPHome → your proxy → **Configure** →
+Bluetooth scanning mode → **Active**. For a local adapter, do the same under the
+Bluetooth integration.
+
+To check, enable debug logging for Kubu: each line `Kubu advert from …` should show a
+different `raw=` value when you open or close a door.
