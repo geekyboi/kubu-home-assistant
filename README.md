@@ -1,0 +1,37 @@
+# Kubu Smart for Home Assistant (local Bluetooth)
+
+Reads Kubu door and window sensors (tested on an Anywhere PRO / RetroPro) straight from
+their Bluetooth adverts. Setup signs in to your Kubu account **once** to fetch each sensor's
+encryption key; after that it is fully local and your password isn't stored.
+
+## Install
+
+**Manual:** copy `custom_components/kubu` into your Home Assistant `config/custom_components/`
+folder, restart, then go to Settings → Devices & services. Kubu should be discovered
+automatically (or use "Add integration" → Kubu). Enter your Kubu email and password.
+
+**HACS:** push this folder to a GitHub repo, then add it in HACS as a custom repository
+(type: Integration).
+
+Added a sensor in the Kubu app later? Open the integration's ⋮ menu → Reconfigure and sign in again.
+
+## What you get per sensor
+
+| Entity | Meaning |
+|---|---|
+| `binary_sensor.<name>` (door) | on = open |
+| `binary_sensor.<name>_lock` | on = unlocked (Home Assistant's lock convention) |
+| `binary_sensor.<name>_tamper` | on = tampered |
+| `binary_sensor.<name>_battery` | on = battery low |
+| `sensor.<name>_state` | open / closed / locked / tampered … |
+| `sensor.<name>_battery_voltage`, `_last_seen` | diagnostics |
+| vibration, signal strength | disabled by default |
+
+States are restored after a restart, since sensors only advertise when something changes.
+
+## Repo layout
+
+- `custom_components/kubu/`: the integration
+- `protocol-findings.md`: how the protocol was worked out
+- `tools/`: Mac scripts used to confirm it (`kubu_keys.py`, `kubu_scan.py`)
+- `tests/`: `pip install pytest-homeassistant-custom-component && pytest`

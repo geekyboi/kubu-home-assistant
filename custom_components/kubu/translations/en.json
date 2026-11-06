@@ -1,0 +1,59 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sign in to Kubu once",
+        "description": "Home Assistant signs in to your Kubu account one time to fetch each sensor's encryption key. After that the sensors are read locally over Bluetooth and your password is not stored.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reconfigure": {
+        "title": "Refresh Kubu sensors",
+        "description": "Sign in again to pick up sensors you've added in the Kubu app.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Wrong email or password.",
+      "cannot_connect": "Couldn't reach Kubu. Check your internet connection and try again.",
+      "no_sensors": "Signed in, but this account has no Bluetooth sensors."
+    },
+    "abort": {
+      "already_configured": "This Kubu account is already set up.",
+      "reconfigure_successful": "Sensors refreshed.",
+      "wrong_account": "That is a different Kubu account from the one set up here."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "lock": {
+        "name": "Lock"
+      }
+    },
+    "sensor": {
+      "state": {
+        "name": "State",
+        "state": {
+          "open": "Open",
+          "closed": "Closed",
+          "locked": "Locked",
+          "unlocked": "Unlocked",
+          "secure": "Secure",
+          "tampered": "Tampered",
+          "unknown": "Unknown"
+        }
+      },
+      "last_seen": {
+        "name": "Last seen"
+      },
+      "battery_voltage": {
+        "name": "Battery voltage"
+      }
+    }
+  }
+}
