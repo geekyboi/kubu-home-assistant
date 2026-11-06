@@ -1,14 +1,13 @@
-# Kubu BLE protocol findings (step 1)
+# Kubu BLE protocol findings
 
-Source: Kubu Smart Android app 8.0.7 (`com.avantis.kubu`), decompiled with jadx 1.5.1.
-App is native Kotlin/Java. Key files: `com/impl/oauthsample/utility/BLEScannerService.java`
-(always-on status scanner), `activity/HomeActivity.java` (same decode logic),
-`activity/BLE/BLESetupSensorDiscoveryActivity.java` (setup), `response/bleNodes.java` (cloud model).
+Worked out for interoperability, so that Kubu sensors you own can be read locally in
+Home Assistant. It describes the data format the sensors broadcast and the account data the
+official app uses; no Kubu code is included in this repository.
 
 ## Headline
 
 Day-to-day status needs **no connection**. Sensors broadcast their state in BLE
-advertisements, and the app only listens passively. That suits Home Assistant
+advertisements, and the official app only listens passively. That suits Home Assistant
 well: a passive Bluetooth integration with no pairing and no GATT.
 
 ## Advertisement format
@@ -37,7 +36,7 @@ well: a passive Bluetooth integration with no pairing and no GATT.
 Otherwise by `type` (v = bytes 8-9 as int):
 - 2: `v & 63` in {55,59,63} -> open, else closed
 - 3: bit 6 set -> open, else closed
-- 4, 5/11/12: 2-bit fields a=v&3, b=(v>>2)&3, c=(v>>4)&3 over `v&63`; 63 open; 42/21 tampered; otherwise closed/secure by field pattern (see `evaluateSensorState`, HomeActivity.java:1032)
+- 4, 5/11/12: 2-bit fields a=v&3, b=(v>>2)&3, c=(v>>4)&3 over `v&63`; 63 open; 42/21 tampered; otherwise closed/secure by field pattern (see `sensor_state` in `protocol.py`)
 - 8: {42,43,46} locked, {58,59,62} closed, 63 open, else tampered
 - 40/41: byte 9: 1 open, 2 closed, 3 secure
 - anything else: open
@@ -54,13 +53,6 @@ dashboard (`GET /view/rooms?homeId=...` -> `bleNodes[]`, fields `sNo`, `dpKey`,
 So the plan needs a one-time key fetch. After that, everything runs locally:
 1. Config flow logs in to Kubu once and reads `bleNodes` (sNo, dpKey, type, class), or
 2. You capture the key yourself (for example with mitmproxy on the iPhone) and paste it in.
-
-## GATT (setup and OTA only, not needed for HA)
-
-- Service `b16a326d-26e3-488f-8bc6-086b9bf17e51`, chars `435e488b-...`, `cd599813-...`, `6f4ca446-...`, `23268b5d-...`, `266e3856-...`
-- Firmware/hardware version chars `6978e724-...` / `5f3807f7-...`
-- OTA service `1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0`, chars `f7bf3564-...`, `984227f3-...`
-- Hub Wi-Fi config uses 16-bit UUIDs 0x1120-0x1148.
 
 ## Confirmed on Ollie's RetroPro (6 Nov 2026)
 

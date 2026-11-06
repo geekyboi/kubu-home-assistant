@@ -1,6 +1,9 @@
-<img src="custom_components/kubu/brand/logo@2x.png" alt="Kubu" height="64">
+# Kubu Smart for Home Assistant (local Bluetooth, unofficial)
 
-# Kubu Smart for Home Assistant (local Bluetooth)
+> This is an unofficial, community integration. It is not affiliated with, endorsed by, or
+> supported by Kubu. Kubu and its product names are trade marks of their owners and are used
+> only to identify compatible devices. It reads data your own sensors broadcast, using keys from
+> your own Kubu account. The Kubu cloud is contacted only during setup and reconfigure.
 
 Reads Kubu door and window sensors (tested on an Anywhere PRO / RetroPro) straight from
 their Bluetooth adverts. Setup signs in to your Kubu account **once** to fetch each sensor's
@@ -14,7 +17,7 @@ automatically (or use "Add integration" → Kubu). Enter your Kubu email and pas
 
 **HACS (recommended):** HACS → ⋮ → Custom repositories → add
 `https://github.com/geekyboi/kubu-home-assistant` as type **Integration**, then download
-"Kubu Smart (local Bluetooth)" and restart Home Assistant. Updates then show up in HACS.
+"Kubu Smart (local Bluetooth, unofficial)" and restart Home Assistant. Updates then show up in HACS.
 
 Added a sensor in the Kubu app later? Open the integration's ⋮ menu → Reconfigure and sign in again.
 
@@ -37,7 +40,7 @@ logbook only shows real events. States are restored after a restart.
 ## Repo layout
 
 - `custom_components/kubu/`: the integration
-- `protocol-findings.md`: how the protocol was worked out
+- `protocol-findings.md`: the advertisement format, as observed from real sensors
 - `tools/`: Mac scripts used to confirm it (`kubu_keys.py`, `kubu_scan.py`)
 - `tests/`: `pip install pytest-homeassistant-custom-component && pytest`
 
