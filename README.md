@@ -1,3 +1,5 @@
+<img src="custom_components/kubu/brand/logo@2x.png" alt="Kubu" height="64">
+
 # Kubu Smart for Home Assistant (local Bluetooth)
 
 Reads Kubu door and window sensors (tested on an Anywhere PRO / RetroPro) straight from
