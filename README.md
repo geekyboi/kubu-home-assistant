@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="custom_components/kubu/brand/dark_logo@2x.png">
+  <img src="custom_components/kubu/brand/logo@2x.png" alt="Local BLE door and window sensors" height="64">
+</picture>
+
 # Kubu Smart for Home Assistant (local Bluetooth, unofficial)
 
 > This is an unofficial, community integration. It is not affiliated with, endorsed by, or
