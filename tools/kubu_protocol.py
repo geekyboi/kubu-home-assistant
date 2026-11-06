@@ -50,7 +50,7 @@ def _fields(v: int) -> tuple[int, int, int, int]:
 
 
 def sensor_state(status: int, logic: int, sensor_class: str | None = None) -> str:
-    """Port of BLEScannerService.evaluateSensorState / evaluateDoorSensorState."""
+    """Map a status word to a state for the given sensor logic type and class."""
     if sensor_class == "door":
         return DOOR_STATES.get(status, "unknown")
     if logic == 2:
@@ -102,7 +102,7 @@ def sensor_state(status: int, logic: int, sensor_class: str | None = None) -> st
         if t in {(True, False, False), (True, True, False)}:
             return "secure"
         return "tampered"
-    return "open"  # app default for unknown logic types
+    return "open"  # unknown logic types are reported as open
 
 
 def parse(
