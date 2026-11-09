@@ -16,14 +16,17 @@ encryption key; after that it is fully local and your password isn't stored.
 
 ## Install
 
-**Manual:** copy `custom_components/kubu` into your Home Assistant `config/custom_components/`
-folder, restart, then go to Settings → Devices & services. Kubu should be discovered
-automatically (or use "Add integration" → Kubu). Enter your Kubu email and password.
-
 **HACS (recommended):** open HACS, search for "Kubu Smart (local Bluetooth, unofficial)",
 download it and restart Home Assistant. Updates then show up in HACS.
 
 [![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=geekyboi&repository=kubu-home-assistant&category=integration)
+
+If it doesn't show up in search, add it as a custom repository instead: HACS → ⋮ → Custom
+repositories → add `https://github.com/geekyboi/kubu-home-assistant` as type **Integration**.
+
+**Manual:** copy `custom_components/kubu` into your Home Assistant `config/custom_components/`
+folder, restart, then go to Settings → Devices & services. Kubu should be discovered
+automatically (or use "Add integration" → Kubu). Enter your Kubu email and password.
 
 Added a sensor in the Kubu app later? Open the integration's ⋮ menu → Reconfigure and sign in again.
 
